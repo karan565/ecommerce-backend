@@ -1,18 +1,14 @@
 const { default: mongoose, Mongoose } = require("mongoose");
-
 const { paginate, paginateArray } = require("../utils/pagination");
 const model_Cart = require("../models/db").Cart;
 const model_Products = require("../models/db").Products;
+const validate = require("../validations/cart");
 
-
-const trailCart = (req, res) => {
-    res.json({ message: "You are in Cart" });
-    console.log("Cart")
-}
 
 const countCartTotal = async (req) => {
     try {
-        const user_id = req.body.user_id;
+        const { user_id } = (req.body);
+        
         const cartDetails = await model_Cart.aggregate([
             {
                 $match: { user_id: new mongoose.Types.ObjectId(user_id) } // Step 1: Match cart items for the given user_id
@@ -38,7 +34,6 @@ const countCartTotal = async (req) => {
                 }
             }
         ]);
-
         // Calculate the total cart amount (if needed)
         const totalCartAmount = cartDetails.reduce((sum, item) => sum + item.total_price, 0);
         // console.log(cartDetails, totalCartAmount);
@@ -47,6 +42,7 @@ const countCartTotal = async (req) => {
         return res.status(500).json({ message: "Error in counting total." });
     }
 }
+
 
 const getCartTotal = async (req, res) => {
     try {
@@ -60,9 +56,11 @@ const getCartTotal = async (req, res) => {
     }
 }
 
+
 const addProductToCart = async (req, res) => {
     try {
-        const { product_id, quantity = 1, user_id } = req.body;
+        const { product_id, quantity = 1 } = validate.validateAddProductToCart(req.body);
+        const { user_id } = req.body;
         const checkProductData = await model_Products.findById(product_id);
         if (!checkProductData) {
             res.status(400).json({ message: "No product found." })
@@ -82,7 +80,8 @@ const addProductToCart = async (req, res) => {
 
 const removeProductFromCart = async (req, res) => {
     try {
-        const { product_id, quantity = 1, user_id, deleteProduct = false } = req.body;
+        const { product_id, quantity = 1, deleteProduct = false } = validate.validateRemoveProductFromCart(req.body);
+        const { user_id } = req.body;
         const checkProductInCart = await model_Cart.findOne({ product_id, user_id });
         let negatedQuantity = -quantity;
         if (deleteProduct) {
@@ -106,7 +105,6 @@ const removeProductFromCart = async (req, res) => {
             const { total } = await countCartTotal(req);
             return res.status(200).json({ message: "Product quantity reduced", data: { "Updated product in cart": updateCartItem, total: total } })
         }
-
     } catch (e) {
         return res.status(500).json({ message: "Error in removing item from cart." });
     }
@@ -115,7 +113,6 @@ const removeProductFromCart = async (req, res) => {
 
 module.exports = {
     countCartTotal,
-    trailCart,
     getCartTotal,
     addProductToCart,
     removeProductFromCart,

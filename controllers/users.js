@@ -1,26 +1,25 @@
 const { paginate } = require("../utils/pagination");
 const jwt = require("jsonwebtoken");
 const model_Users = require("../models/db").Users;
+const validate = require("../validations/users");
 
 require("dotenv").config();
 
-const trailUsers = (req, res) => {
-    res.json({ message: "You are in Users" });
-    console.log("Users")
-}
 
-const getUserDetails = async (user_id) => {
+const getUserDetails = async (req, res) => {
     try {
+        const user_id = req.body.user_id;
         const userDetails = await model_Users.findById(user_id);
-        return userDetails;
+        return res.status(200).json({ message: "User data found.", data: { allUsers } })
     } catch (e) {
-        return null;
+        return res.status(500).json({ message: "Error in getting user details." });
     }
 }
 
+
 const signUpUser = async (req, res) => {
     try {
-        const { full_name, email, password, phone_no, address, role } = req.body;
+        const { full_name, email, password, phone_no, address, role } = validate.validateSignup(req.body);
         const checkIfUserAlreadyExist = await model_Users.findOne({ email })
         if (checkIfUserAlreadyExist) {
             return res.status(400).json({ message: "User with email already exist." });
@@ -32,10 +31,11 @@ const signUpUser = async (req, res) => {
     }
 }
 
+
 const loginUser = async (req, res) => {
     try {
         const { JWT_SECRET } = process.env;
-        const { email, password } = req.body;
+        const { email, password } = validate.validateLogin(req.body);
         const checkIfUserExist = await model_Users.findOne({ email, password })
         if (checkIfUserExist) {
             const token = jwt.sign({
@@ -48,9 +48,11 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Incorrect data." });
         }
     } catch (e) {
+        console.log(e);
         return res.status(500).json({ message: "Error logging in." });
     }
 }
+
 
 const getAllUsers = async (req, res) => {
     try {
@@ -69,9 +71,10 @@ const getAllUsers = async (req, res) => {
 
 }
 
+
 const deleteUserByEmail = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email } = validate.validateDeleteUserByEmail(req.body);
         const deletedData = await model_Users.deleteOne({ email })
         console.log(deletedData);
         if (deletedData.deletedCount == 0) {
@@ -85,9 +88,10 @@ const deleteUserByEmail = async (req, res) => {
     }
 }
 
+
 const updateAddressOfUserByEmail = async (req, res) => {
     try {
-        const { email, address } = req.body;
+        const { email, address } = validate.validateUpdateAddressOfUserByEmail(req.body);
         const updatedData = await model_Users.updateOne({ email }, { address })
         if (!updatedData.acknowledged) {
             return res.status(400).json({ message: "No user found with the email id " + email + " ." })
@@ -96,15 +100,13 @@ const updateAddressOfUserByEmail = async (req, res) => {
             return res.status(200).json({ message: "User address updated successfully" })
         }
     } catch (e) {
+        console.log(e);
         return res.status(500).json({ message: "Error in updating address of the user using by email." });
     }
 }
 
 
-
-
 module.exports = {
-    trailUsers,
     signUpUser,
     loginUser,
     getAllUsers,

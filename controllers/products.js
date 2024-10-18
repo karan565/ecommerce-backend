@@ -1,14 +1,11 @@
 const model_Products = require("../models/db").Products;
 const { paginate } = require("../utils/pagination");
+const validate = require("../validations/products");
 
-const trailProducts = (req, res) => {
-    res.json({ message: "You are in Products" });
-    console.log("Products")
-}
 
-const addProduct = async (req, res) => {
+const createProduct = async (req, res) => {
     try {
-        const { product_name, description, brand, price, quantity, category } = req.body;
+        const { product_name, description, brand, price, quantity, category } = validate.validateCreateProduct(req.body);
         const seller_id = req.body.user_id;
         const checkIfProductAlreadyExist = await model_Products.findOne({ product_name, brand, price, seller_id });
         if (checkIfProductAlreadyExist) {
@@ -20,6 +17,7 @@ const addProduct = async (req, res) => {
         return res.status(500).json({ message: "Error adding product." });
     }
 }
+
 
 const getAllProducts = async (req, res) => {
     try {
@@ -38,9 +36,10 @@ const getAllProducts = async (req, res) => {
     }
 }
 
+
 const getProductById = async (req, res) => {
     try {
-        const { product_id } = req.params;
+        const { product_id } = validate.validateCheckProductId(req.params);
         console.log(product_id);
         const productData = await model_Products.findOne({ _id: product_id })
         console.log(productData);
@@ -54,9 +53,10 @@ const getProductById = async (req, res) => {
     }
 }
 
+
 const getProductsByCategory = async (req, res) => {
     try {
-        const { category } = req.params;
+        const { category } = validate.getProductsByCategory(req.params);
         const page = req.query.page || 1;
         const pageSize = 5;
         const skip = paginate(page, pageSize)
@@ -71,9 +71,10 @@ const getProductsByCategory = async (req, res) => {
     }
 }
 
+
 const deleteProductById = async (req, res) => {
     try {
-        const { product_id } = req.params;
+        const { product_id } = validate.validateCheckProductId(req.params);
         const deletedData = await model_Products.deleteOne({ _id: product_id });
         console.log(deletedData);
         if (deletedData.deletedCount == 0) {
@@ -87,9 +88,10 @@ const deleteProductById = async (req, res) => {
     }
 }
 
+
 const updateProductQuantityById = async (req, res) => {
     try {
-        const { product_id, change } = req.params;
+        const { product_id, change } = validate.validateUpdateProductQuantityById(req.params);
         const oldProductData = await model_Products.findById(product_id);
         if (!oldProductData) {
             return res.status(400).json({ message: "No product found." })
@@ -109,8 +111,7 @@ const updateProductQuantityById = async (req, res) => {
 
 
 module.exports = {
-    trailProducts,
-    addProduct,
+    createProduct,
     getAllProducts,
     getProductById,
     getProductsByCategory,
