@@ -7,12 +7,11 @@ const { countCartTotal } = require("./cart");
 const { getUserDetails } = require("./users");
 const { default: mongoose } = require("mongoose");
 const { paginate } = require("../utils/pagination");
-const validate = require("../validations/orders");
 
 
 const placeOrder = async (req, res) => {
     try {
-        const user_id = req.body.user_id;
+        const { user_id } = req.body;
         const session = await mongoose.startSession();
         session.startTransaction();
 
@@ -118,8 +117,7 @@ const getAllOrders = async (req, res) => {
 
 const getOrderById = async (req, res) => {
     try {
-        const { order_id } = validate.validateCheckOrderId(req.params);
-        const { user_id, user_role } = req.body;
+        const { user_id, user_role, order_id } = req.body;
         let orderData = [];
         if (user_role === "admin") {
             orderData = await model_Orders.findOne({ _id: order_id });
@@ -138,8 +136,7 @@ const getOrderById = async (req, res) => {
 
 const deleteOrder = async (req, res) => {
     try {
-        const { order_id } = validate.validateCheckOrderId(req.body);
-        const { user_id, user_role } = req.body;
+        const { user_id, user_role, order_id } = req.body;
         let isVerifiedOrder = null;
         if (user_role === "user") {
             isVerifiedOrder = await model_Orders.findOne({ user_id, _id: order_id });

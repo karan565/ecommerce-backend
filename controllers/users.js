@@ -1,14 +1,13 @@
 const { paginate } = require("../utils/pagination");
 const jwt = require("jsonwebtoken");
 const model_Users = require("../models/db").Users;
-const validate = require("../validations/users");
 
 require("dotenv").config();
 
 
 const getUserDetails = async (req, res) => {
     try {
-        const user_id = req.body.user_id;
+        const { user_id } = req.user_id;
         const userDetails = await model_Users.findById(user_id);
         return res.status(200).json({ message: "User data found.", data: { allUsers } })
     } catch (e) {
@@ -19,7 +18,7 @@ const getUserDetails = async (req, res) => {
 
 const signUpUser = async (req, res) => {
     try {
-        const { full_name, email, password, phone_no, address, role } = validate.validateSignup(req.body);
+        const { full_name, email, password, phone_no, address, role } = req.body;
         const checkIfUserAlreadyExist = await model_Users.findOne({ email })
         if (checkIfUserAlreadyExist) {
             return res.status(400).json({ message: "User with email already exist." });
@@ -35,7 +34,7 @@ const signUpUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { JWT_SECRET } = process.env;
-        const { email, password } = validate.validateLogin(req.body);
+        const { email, password } = req.body;
         const checkIfUserExist = await model_Users.findOne({ email, password })
         if (checkIfUserExist) {
             const token = jwt.sign({
@@ -74,7 +73,7 @@ const getAllUsers = async (req, res) => {
 
 const deleteUserByEmail = async (req, res) => {
     try {
-        const { email } = validate.validateDeleteUserByEmail(req.body);
+        const { email } = req.body;
         const deletedData = await model_Users.deleteOne({ email })
         console.log(deletedData);
         if (deletedData.deletedCount == 0) {
@@ -91,7 +90,7 @@ const deleteUserByEmail = async (req, res) => {
 
 const updateAddressOfUserByEmail = async (req, res) => {
     try {
-        const { email, address } = validate.validateUpdateAddressOfUserByEmail(req.body);
+        const { email, address } = req.body;
         const updatedData = await model_Users.updateOne({ email }, { address })
         if (!updatedData.acknowledged) {
             return res.status(400).json({ message: "No user found with the email id " + email + " ." })

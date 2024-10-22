@@ -1,11 +1,10 @@
 const model_Products = require("../models/db").Products;
 const { paginate } = require("../utils/pagination");
-const validate = require("../validations/products");
 
 
 const createProduct = async (req, res) => {
     try {
-        const { product_name, description, brand, price, quantity, category } = validate.validateCreateProduct(req.body);
+        const { product_name, description, brand, price, quantity, category } = req.body;
         const seller_id = req.body.user_id;
         const checkIfProductAlreadyExist = await model_Products.findOne({ product_name, brand, price, seller_id });
         if (checkIfProductAlreadyExist) {
@@ -39,10 +38,8 @@ const getAllProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
     try {
-        const { product_id } = validate.validateCheckProductId(req.params);
-        console.log(product_id);
+        const { product_id } = req.body;
         const productData = await model_Products.findOne({ _id: product_id })
-        console.log(productData);
         if (!productData) {
             return res.status(400).json({ message: "No product found with id " + product_id + " ." })
         } else {
@@ -56,7 +53,7 @@ const getProductById = async (req, res) => {
 
 const getProductsByCategory = async (req, res) => {
     try {
-        const { category } = validate.getProductsByCategory(req.params);
+        const { category } = req.body;
         const page = req.query.page || 1;
         const pageSize = 5;
         const skip = paginate(page, pageSize)
@@ -74,7 +71,7 @@ const getProductsByCategory = async (req, res) => {
 
 const deleteProductById = async (req, res) => {
     try {
-        const { product_id } = validate.validateCheckProductId(req.params);
+        const { product_id } = req.body;
         const deletedData = await model_Products.deleteOne({ _id: product_id });
         console.log(deletedData);
         if (deletedData.deletedCount == 0) {
@@ -91,7 +88,7 @@ const deleteProductById = async (req, res) => {
 
 const updateProductQuantityById = async (req, res) => {
     try {
-        const { product_id, change } = validate.validateUpdateProductQuantityById(req.params);
+        const { product_id, change } = req.body;
         const oldProductData = await model_Products.findById(product_id);
         if (!oldProductData) {
             return res.status(400).json({ message: "No product found." })

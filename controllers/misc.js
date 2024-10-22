@@ -17,17 +17,17 @@ const getAPI = (req, res) => {
         POST http://localhost:3000/orders/place: Place an order. (Roles: user, admin)
         GET http://localhost:3000/orders/all: Get all orders. (Roles: user, admin)
         DELETE http://localhost:3000/orders/delete: Delete an order. (Roles: user, admin)
-        GET http://localhost:3000/orders/:order_id: Get order details by order ID. (Roles: user, admin)
+        GET http://localhost:3000/orders/getOrder: Get order details by order ID. (Roles: user, admin)
 
 
         Product API Endpoints:
         -------------------------------------------------------------------------------------------
         POST http://localhost:3000/products/add: Create a new product. (Roles: admin)
         GET http://localhost:3000/products/all: Get all products.
-        GET http://localhost:3000/products/:product_id: Get product details by product ID.
-        GET http://localhost:3000/products/category/:category: Get products by category.
-        DELETE http://localhost:3000/products/delete/:product_id: Delete a product by product ID. (Roles: admin)
-        PUT http://localhost:3000/products/:product_id/updateQuantity/:change: Update product quantity. (Roles: admin)
+        GET http://localhost:3000/products/getProduct: Get product details by product ID.
+        GET http://localhost:3000/products/category: Get products by category.
+        DELETE http://localhost:3000/products/deleteProduct: Delete a product by product ID. (Roles: admin)
+        PUT http://localhost:3000/products/:product_id/updateQuantity: Update product quantity. (Roles: admin)
 
 
         User API Endpoints:

@@ -2,13 +2,13 @@ const { default: mongoose, Mongoose } = require("mongoose");
 const { paginate, paginateArray } = require("../utils/pagination");
 const model_Cart = require("../models/db").Cart;
 const model_Products = require("../models/db").Products;
-const validate = require("../validations/cart");
+
 
 
 const countCartTotal = async (req) => {
     try {
         const { user_id } = (req.body);
-        
+
         const cartDetails = await model_Cart.aggregate([
             {
                 $match: { user_id: new mongoose.Types.ObjectId(user_id) } // Step 1: Match cart items for the given user_id
@@ -59,8 +59,7 @@ const getCartTotal = async (req, res) => {
 
 const addProductToCart = async (req, res) => {
     try {
-        const { product_id, quantity = 1 } = validate.validateAddProductToCart(req.body);
-        const { user_id } = req.body;
+        const { user_id, product_id, quantity = 1 } = req.body;
         const checkProductData = await model_Products.findById(product_id);
         if (!checkProductData) {
             res.status(400).json({ message: "No product found." })
@@ -80,8 +79,7 @@ const addProductToCart = async (req, res) => {
 
 const removeProductFromCart = async (req, res) => {
     try {
-        const { product_id, quantity = 1, deleteProduct = false } = validate.validateRemoveProductFromCart(req.body);
-        const { user_id } = req.body;
+        const { user_id, product_id, quantity = 1, deleteProduct = false } = req.body;
         const checkProductInCart = await model_Cart.findOne({ product_id, user_id });
         let negatedQuantity = -quantity;
         if (deleteProduct) {
