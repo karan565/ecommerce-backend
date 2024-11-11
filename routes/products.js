@@ -2,9 +2,18 @@ const router = require("express").Router();
 const controller_products = require("../controllers/products");
 const auth = require("../middlewares/auth");
 const validate = require("../validations/products");
+const rateLimit = require('express-rate-limit');
 
 
+const rateLimiter = rateLimit({
+    // windowMs: 1 * 24 * 60 * 60 * 1000, // 1 Day
+    windowMs: 1 * 60 * 1000, // 10 minutes
+    limit: 3,
+    message: "You have exceeded the limit of API calls, limit will be refreshed in a minute",
+})
 
+
+router.use("/", rateLimiter)
 router.post("/add", auth.check_token, auth.checkUserRole("admin"), validate.validateCreateProduct, controller_products.createProduct)
 router.get("/all", auth.check_token, controller_products.getAllProducts)
 router.get("/getProduct", auth.check_token, validate.validateCheckProductId, controller_products.getProductById)
